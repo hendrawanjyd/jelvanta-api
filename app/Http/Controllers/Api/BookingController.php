@@ -44,7 +44,7 @@ class BookingController extends Controller
 
         $booking = Booking::create([
             'kode_booking' => 'JLV-' . now()->format('Ymd') . '-' . strtoupper(Str::random(4)),
-            'user_id' => $request->user()?->id,
+            'user_id' => $request->user('sanctum')?->id,
             'destinasi_id' => $destination->id,
             'nama_pemesan' => $validated['nama_pemesan'],
             'email' => $validated['email'],
@@ -83,6 +83,20 @@ class BookingController extends Controller
             'success' => true,
             'message' => 'Detail pemesanan berhasil diambil',
             'data' => $booking,
+        ]);
+    }
+
+    public function myBookings(Request $request): JsonResponse
+    {
+        $bookings = Booking::with('destination:id,slug,nama,lokasi,durasi,gambar')
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Riwayat pemesanan berhasil diambil',
+            'data' => $bookings,
         ]);
     }
 }
